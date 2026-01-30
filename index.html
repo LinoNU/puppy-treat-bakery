@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puppy Treat Bakery 🐕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #8B4513;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #5D4037;
+        }
+
+        .stat span {
+            color: #FF6B6B;
+        }
+
+        .streak-fire {
+            color: #FF4500 !important;
+        }
+
+        .main-game {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .puppy-container {
+            position: relative;
+            height: 180px;
+            margin-bottom: 20px;
+        }
+
+        .puppy {
+            font-size: 120px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .puppy.happy {
+            animation: wiggle 0.5s ease;
+        }
+
+        .puppy.sad {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FFF9C4;
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1.1rem;
+            color: #5D4037;
+            max-width: 300px;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 10px solid transparent;
+            border-top-color: #FFF9C4;
+        }
+
+        .problem-section {
+            margin: 30px 0;
+        }
+
+        .instruction {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .fraction-display {
+            font-size: 2.5rem;
+            color: #8B4513;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+        }
+
+        .numerator, .denominator {
+            line-height: 1.2;
+        }
+
+        .fraction-line {
+            width: 100%;
+            height: 4px;
+            background: #8B4513;
+            margin: 2px 0;
+        }
+
+        .visual-hint {
+            margin: 20px 0;
+            padding: 15px;
+            background: #FFF3E0;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .visual-hint.show {
+            display: block;
+        }
+
+        .boxes-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .treat-box {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15px, 1fr));
+            gap: 2px;
+            padding: 5px;
+            background: #FFECB3;
+        }
+
+        .treat {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-section {
+            margin: 30px 0;
+        }
+
+        .answer-inputs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        input[type="number"] {
+            width: 70px;
+            height: 50px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 3px solid #DDD;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #FF6B6B;
+        }
+
+        .fraction-input {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .fraction-input input {
+            width: 60px;
+            height: 45px;
+        }
+
+        .fraction-input .fraction-line {
+            width: 60px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-hint {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            color: white;
+            padding: 10px 25px;
+            font-size: 1rem;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .feedback {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .feedback.correct {
+            display: block;
+            background: #C8E6C9;
+            color: #2E7D32;
+            animation: pop 0.3s ease;
+        }
+
+        .feedback.incorrect {
+            display: block;
+            background: #FFCDD2;
+            color: #C62828;
+            animation: pop 0.3s ease;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #8B4513;
+            background: white;
+            color: #8B4513;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #8B4513;
+            color: white;
+        }
+
+        .difficulty-section {
+            margin-bottom: 20px;
+        }
+
+        .difficulty-section label {
+            color: #666;
+            margin-right: 10px;
+        }
+
+        .difficulty-section select {
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 2px solid #DDD;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .unlocked-puppies {
+            margin-top: 30px;
+            padding: 20px;
+            background: #F5F5F5;
+            border-radius: 20px;
+        }
+
+        .unlocked-puppies h3 {
+            color: #5D4037;
+            margin-bottom: 15px;
+        }
+
+        .puppy-collection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .puppy-badge {
+            font-size: 40px;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+            filter: grayscale(100%);
+        }
+
+        .puppy-badge.unlocked {
+            opacity: 1;
+            filter: grayscale(0%);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: fall 3s linear forwards;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen p {
+            font-size: 1.1rem;
+            color: #666;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .start-puppy {
+            font-size: 100px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>🦴 Puppy Treat Bakery 🦴</h1>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat">🍪 Treats Served: <span id="score">0</span></div>
+            <div class="stat">🔥 Streak: <span id="streak" class="streak-fire">0</span></div>
+            <div class="stat">⭐ Puppy Points: <span id="points">0</span></div>
+        </div>
+
+        <div class="main-game">
+            <!-- Start Screen -->
+            <div id="start-screen" class="start-screen">
+                <div class="start-puppy">🐕</div>
+                <h2>Welcome to the Puppy Treat Bakery!</h2>
+                <p>
+                    Puppies are hungry and need your help! 🐾<br><br>
+                    You'll package treat orders by converting between improper fractions and mixed numbers.<br><br>
+                    Full boxes = whole numbers<br>
+                    Individual treats = the fraction part<br><br>
+                    Get answers right to make puppies happy and earn points to unlock new puppy friends!
+                </p>
+                <button class="btn btn-primary" onclick="startGame()">Let's Bake! 🍪</button>
+            </div>
+
+            <!-- Game Screen -->
+            <div id="game-screen" class="hidden">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="mode-improper" onclick="setMode('improper')">
+                        Improper → Mixed
+                    </button>
+                    <button class="mode-btn" id="mode-mixed" onclick="setMode('mixed')">
+                        Mixed → Improper
+                    </button>
+                    <button class="mode-btn" id="mode-random" onclick="setMode('random')">
+                        Mix It Up!
+                    </button>
+                </div>
+
+                <div class="difficulty-section">
+                    <label for="difficulty">Difficulty:</label>
+                    <select id="difficulty" onchange="generateProblem()">
+                        <option value="easy">Easy (small numbers)</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard (bigger numbers)</option>
+                    </select>
+                </div>
+
+                <div class="puppy-container">
+                    <div class="speech-bubble" id="speech-bubble">
+                        I'd like some treats please!
+                    </div>
+                    <div class="puppy" id="puppy">🐕</div>
+                </div>
+
+                <div class="problem-section">
+                    <p class="instruction" id="instruction"></p>
+                    <div class="fraction-display" id="problem-display"></div>
+                </div>
+
+                <div class="visual-hint" id="visual-hint">
+                    <strong>💡 Hint: Here's what the treats look like!</strong>
+                    <div class="boxes-display" id="boxes-display"></div>
+                </div>
+
+                <button class="btn btn-hint" onclick="showHint()">Show Hint 💡</button>
+
+                <div class="answer-section">
+                    <p id="whole-number-hint" style="display: none; color: #4ECDC4; font-size: 0.9rem; margin-bottom: 10px;">
+                        💡 Tip: If it's a whole number, just fill in the "Whole" box and leave the fraction empty or as 0!
+                    </p>
+                    <!-- Improper to Mixed inputs -->
+                    <div id="mixed-inputs" class="answer-inputs">
+                        <div class="input-group">
+                            <label>Whole:</label>
+                            <input type="number" id="whole-input" min="0" placeholder="?">
+                        </div>
+                        <div class="fraction-input">
+                            <input type="number" id="num-input" min="0" placeholder="?">
+                            <div class="fraction-line"></div>
+                            <input type="number" id="denom-input" min="1" placeholder="?">
+                        </div>
+                    </div>
+
+                    <!-- Mixed to Improper inputs -->
+                    <div id="improper-inputs" class="answer-inputs hidden">
+                        <div class="fraction-input">
+                            <input type="number" id="improper-num-input" min="0" placeholder="?">
+                            <div class="fraction-line"></div>
+                            <input type="number" id="improper-denom-input" min="1" placeholder="?">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback" id="feedback"></div>
+
+                <button class="btn btn-primary" id="check-btn" onclick="checkAnswer()">
+                    Serve Treats! 🍪
+                </button>
+                <button class="btn btn-next hidden" id="next-btn" onclick="generateProblem()">
+                    Next Puppy! 🐾
+                </button>
+            </div>
+
+            <div class="unlocked-puppies">
+                <h3>🏆 Your Puppy Collection</h3>
+                <p style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">Earn points to unlock new puppies!</p>
+                <div class="puppy-collection" id="puppy-collection">
+                    <span class="puppy-badge unlocked" title="Starter Pup (0 pts)">🐕</span>
+                    <span class="puppy-badge" title="Golden (50 pts)">🐕‍🦺</span>
+                    <span class="puppy-badge" title="Poodle (100 pts)">🐩</span>
+                    <span class="puppy-badge" title="Hot Dog (200 pts)">🌭</span>
+                    <span class="puppy-badge" title="Wolf (350 pts)">🐺</span>
+                    <span class="puppy-badge" title="Fox (500 pts)">🦊</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        // Game state
+        let state = {
+            score: 0,
+            streak: 0,
+            points: 0,
+            mode: 'improper', // 'improper', 'mixed', or 'random'
+            currentProblem: null,
+            unlockedPuppies: ['🐕'],
+            currentPuppy: '🐕'
+        };
+
+        const puppyUnlocks = [
+            { emoji: '🐕', points: 0 },
+            { emoji: '🐕‍🦺', points: 50 },
+            { emoji: '🐩', points: 100 },
+            { emoji: '🌭', points: 200 },
+            { emoji: '🐺', points: 350 },
+            { emoji: '🦊', points: 500 }
+        ];
+
+        const puppySayings = [
+            "I'd like some treats please!",
+            "Woof! Package my treats!",
+            "My tummy is rumbling!",
+            "*tail wagging intensifies*",
+            "Treats? For me?!",
+            "I've been a good pup!",
+            "Arf arf! Treat time!",
+            "Is that bacon I smell?"
+        ];
+
+        const happySayings = [
+            "Yummy! Thank you! 🎉",
+            "Best treats ever! 💕",
+            "*happy dance* 🐾",
+            "You're the best! ⭐",
+            "Woof woof! Delicious!",
+            "More more more! 🍪"
+        ];
+
+        const sadSayings = [
+            "Hmm, that's not quite right...",
+            "Let me count again...",
+            "Almost! Try once more!",
+            "Oops! Check your math!",
+            "Not quite, but you've got this!"
+        ];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            generateProblem();
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+            generateProblem();
+        }
+
+        function getDifficultyRange() {
+            const difficulty = document.getElementById('difficulty').value;
+            switch(difficulty) {
+                case 'easy':
+                    return { minNum: 3, maxNum: 10, minDenom: 2, maxDenom: 4 };
+                case 'medium':
+                    return { minNum: 5, maxNum: 20, minDenom: 2, maxDenom: 6 };
+                case 'hard':
+                    return { minNum: 10, maxNum: 40, minDenom: 3, maxDenom: 10 };
+            }
+        }
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function generateProblem() {
+            // Reset UI
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('check-btn').classList.remove('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('visual-hint').classList.remove('show');
+            const wholeNumberHint = document.getElementById('whole-number-hint');
+            if (wholeNumberHint) wholeNumberHint.style.display = 'none';
+            
+            // Clear inputs
+            document.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                input.disabled = false;
+            });
+
+            // Determine problem type
+            let problemType = state.mode;
+            if (state.mode === 'random') {
+                problemType = Math.random() < 0.5 ? 'improper' : 'mixed';
+            }
+
+            const range = getDifficultyRange();
+            
+            if (problemType === 'improper') {
+                // Generate improper fraction (numerator > denominator)
+                const denominator = Math.floor(Math.random() * (range.maxDenom - range.minDenom + 1)) + range.minDenom;
+                const numerator = Math.floor(Math.random() * (range.maxNum - range.minNum + 1)) + range.minNum;
+                
+                // Make sure it's actually improper
+                const actualNumerator = Math.max(numerator, denominator + 1);
+                
+                state.currentProblem = {
+                    type: 'improper',
+                    numerator: actualNumerator,
+                    denominator: denominator,
+                    whole: Math.floor(actualNumerator / denominator),
+                    remainder: actualNumerator % denominator
+                };
+
+                // Check if result will be a whole number
+                const isWholeNumber = actualNumerator % denominator === 0;
+                
+                document.getElementById('instruction').textContent = 
+                    "Convert this improper fraction to a mixed number:";
+                document.getElementById('problem-display').innerHTML = 
+                    `<span class="fraction"><span class="numerator">${actualNumerator}</span><div class="fraction-line"></div><span class="denominator">${denominator}</span></span>`;
+                
+                // Show hint about whole numbers
+                const wholeNumberHint = document.getElementById('whole-number-hint');
+                if (wholeNumberHint) {
+                    wholeNumberHint.style.display = isWholeNumber ? 'block' : 'none';
+                }
+                
+                document.getElementById('mixed-inputs').classList.remove('hidden');
+                document.getElementById('improper-inputs').classList.add('hidden');
+            } else {
+                // Generate mixed number
+                const denominator = Math.floor(Math.random() * (range.maxDenom - range.minDenom + 1)) + range.minDenom;
+                const whole = Math.floor(Math.random() * 5) + 1;
+                const remainder = Math.floor(Math.random() * (denominator - 1)) + 1;
+                const numerator = whole * denominator + remainder;
+
+                state.currentProblem = {
+                    type: 'mixed',
+                    numerator: numerator,
+                    denominator: denominator,
+                    whole: whole,
+                    remainder: remainder
+                };
+
+                document.getElementById('instruction').textContent = 
+                    "Convert this mixed number to an improper fraction:";
+                document.getElementById('problem-display').innerHTML = 
+                    `${whole} <span class="fraction"><span class="numerator">${remainder}</span><div class="fraction-line"></div><span class="denominator">${denominator}</span></span>`;
+                
+                document.getElementById('mixed-inputs').classList.add('hidden');
+                document.getElementById('improper-inputs').classList.remove('hidden');
+            }
+
+            // Update puppy
+            updatePuppy();
+            
+            // Random saying
+            document.getElementById('speech-bubble').textContent = 
+                puppySayings[Math.floor(Math.random() * puppySayings.length)];
+        }
+
+        function showHint() {
+            const hint = document.getElementById('visual-hint');
+            const boxesDisplay = document.getElementById('boxes-display');
+            hint.classList.add('show');
+            
+            const { numerator, denominator } = state.currentProblem;
+            const fullBoxes = Math.floor(numerator / denominator);
+            const remaining = numerator % denominator;
+            
+            let html = '';
+            
+            // Full boxes
+            for (let i = 0; i < fullBoxes; i++) {
+                html += '<div class="treat-box">';
+                for (let j = 0; j < denominator; j++) {
+                    html += '<span class="treat">🍪</span>';
+                }
+                html += '</div>';
+            }
+            
+            // Partial box if there's a remainder
+            if (remaining > 0) {
+                html += '<div class="treat-box" style="border-style: dashed;">';
+                for (let j = 0; j < remaining; j++) {
+                    html += '<span class="treat">🍪</span>';
+                }
+                for (let j = remaining; j < denominator; j++) {
+                    html += '<span class="treat" style="opacity: 0.2;">🍪</span>';
+                }
+                html += '</div>';
+            }
+            
+            boxesDisplay.innerHTML = html;
+        }
+
+        function checkAnswer() {
+            const problem = state.currentProblem;
+            let isCorrect = false;
+            
+            if (problem.type === 'improper') {
+                const wholeAnswer = parseInt(document.getElementById('whole-input').value) || 0;
+                const numAnswer = parseInt(document.getElementById('num-input').value) || 0;
+                const denomAnswer = parseInt(document.getElementById('denom-input').value) || 0;
+                
+                // Check if answer is correct (allowing for equivalent fractions)
+                const correctWhole = problem.whole;
+                const correctNum = problem.remainder;
+                const correctDenom = problem.denominator;
+                
+                // Special case: when the answer is a whole number (no remainder)
+                if (correctNum === 0) {
+                    // Accept if whole is correct AND either:
+                    // - fraction fields are empty/zero
+                    // - fraction equals zero (0/anything)
+                    isCorrect = wholeAnswer === correctWhole && 
+                               (numAnswer === 0 || (numAnswer === 0 && denomAnswer > 0));
+                } else {
+                    // Simplify both fractions for comparison
+                    const userGcd = denomAnswer > 0 ? gcd(numAnswer, denomAnswer) : 1;
+                    const correctGcd = gcd(correctNum, correctDenom);
+                    
+                    const userSimplifiedNum = denomAnswer > 0 ? numAnswer / userGcd : numAnswer;
+                    const userSimplifiedDenom = denomAnswer > 0 ? denomAnswer / userGcd : 1;
+                    const correctSimplifiedNum = correctNum / correctGcd;
+                    const correctSimplifiedDenom = correctDenom / correctGcd;
+                    
+                    isCorrect = wholeAnswer === correctWhole && 
+                               ((numAnswer === correctNum && denomAnswer === correctDenom) ||
+                                (userSimplifiedNum === correctSimplifiedNum && userSimplifiedDenom === correctSimplifiedDenom));
+                }
+                
+            } else {
+                const numAnswer = parseInt(document.getElementById('improper-num-input').value) || 0;
+                const denomAnswer = parseInt(document.getElementById('improper-denom-input').value) || 0;
+                
+                // Check if answer is correct
+                isCorrect = numAnswer === problem.numerator && denomAnswer === problem.denominator;
+                
+                // Also accept simplified equivalent fractions
+                if (!isCorrect) {
+                    const answerGcd = gcd(numAnswer, denomAnswer);
+                    const correctGcd = gcd(problem.numerator, problem.denominator);
+                    isCorrect = (numAnswer / answerGcd === problem.numerator / correctGcd) &&
+                               (denomAnswer / answerGcd === problem.denominator / correctGcd);
+                }
+            }
+            
+            const feedback = document.getElementById('feedback');
+            const puppy = document.getElementById('puppy');
+            const speechBubble = document.getElementById('speech-bubble');
+            
+            if (isCorrect) {
+                state.score++;
+                state.streak++;
+                state.points += 10 + (state.streak * 2);
+                
+                feedback.textContent = `🎉 Correct! +${10 + (state.streak * 2)} points!`;
+                feedback.className = 'feedback correct';
+                
+                puppy.classList.add('happy');
+                setTimeout(() => puppy.classList.remove('happy'), 500);
+                
+                speechBubble.textContent = happySayings[Math.floor(Math.random() * happySayings.length)];
+                
+                createConfetti();
+                checkUnlocks();
+            } else {
+                state.streak = 0;
+                
+                let correctAnswer = '';
+                if (problem.type === 'improper') {
+                    if (problem.remainder === 0) {
+                        correctAnswer = `${problem.whole}`;
+                    } else {
+                        correctAnswer = `${problem.whole} ${problem.remainder}/${problem.denominator}`;
+                    }
+                } else {
+                    correctAnswer = `${problem.numerator}/${problem.denominator}`;
+                }
+                
+                feedback.textContent = `Not quite! The answer was ${correctAnswer}`;
+                feedback.className = 'feedback incorrect';
+                
+                puppy.classList.add('sad');
+                setTimeout(() => puppy.classList.remove('sad'), 500);
+                
+                speechBubble.textContent = sadSayings[Math.floor(Math.random() * sadSayings.length)];
+            }
+            
+            updateStats();
+            
+            // Disable inputs and show next button
+            document.querySelectorAll('input').forEach(input => input.disabled = true);
+            document.getElementById('check-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = state.score;
+            document.getElementById('streak').textContent = state.streak;
+            document.getElementById('points').textContent = state.points;
+        }
+
+        function updatePuppy() {
+            // Pick a random unlocked puppy
+            state.currentPuppy = state.unlockedPuppies[Math.floor(Math.random() * state.unlockedPuppies.length)];
+            document.getElementById('puppy').textContent = state.currentPuppy;
+        }
+
+        function checkUnlocks() {
+            const collection = document.getElementById('puppy-collection');
+            const badges = collection.querySelectorAll('.puppy-badge');
+            
+            puppyUnlocks.forEach((unlock, index) => {
+                if (state.points >= unlock.points && !state.unlockedPuppies.includes(unlock.emoji)) {
+                    state.unlockedPuppies.push(unlock.emoji);
+                    badges[index].classList.add('unlocked');
+                    
+                    // Celebration for new unlock
+                    document.getElementById('speech-bubble').textContent = 
+                        `🎊 NEW PUPPY UNLOCKED: ${unlock.emoji}!`;
+                }
+            });
+        }
+
+        function createConfetti() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA'];
+            
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                celebration.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const checkBtn = document.getElementById('check-btn');
+                const nextBtn = document.getElementById('next-btn');
+                
+                if (!checkBtn.classList.contains('hidden')) {
+                    checkAnswer();
+                } else if (!nextBtn.classList.contains('hidden')) {
+                    generateProblem();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
